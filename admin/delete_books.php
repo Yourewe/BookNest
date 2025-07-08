@@ -1,8 +1,67 @@
 <?php
+session_start();
 require '../includes/db.php';
-require '../includes/auth.php';
+require '../includes/functions.php';
 
-$id = $_GET['id'];
-$conn->query("DELETE FROM books WHERE book_id = $id");
-header("Location: manage_books.php");
+if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
+    header('Location: ../login.php');
+    exit;
+}
+
+$book_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+if ($book_id <= 0) {
+    redirect_with_message('manage_books.php', 'Invalid book ID', 'error');
+}
+
+// Get book details first
+$book = get_book_by_id($conn, $book_id);
+
+if (!$book) {
+    redirect_with_message('manage_books.php', 'Book not found', 'error');
+}
+
+try {
+    // Start transaction
+    $conn->begin_transaction();
+    
+    // Check if book has any orders (you might want to prevent deletion if there are orders)
+    $order_check = $conn->prepare("SELECT COUNT(*) as order_count FROM order_details WHERE book_id = ?");
+    $order_check->bind_param("i", $book_id);
+    $order_check->execute();
+    $order_count = $order_check->get_result()->fetch_assoc()['order_count'];
+    
+    if ($order_count > 0) {
+        // Instead of deleting, you might want to mark as inactive or show warning
+        redirect_with_message('manage_books.php', 'Cannot delete book with existing orders. Consider updating stock to 0 instead.', 'warning');
+    }
+    
+    // Delete book cover image if it exists
+    if (!empty($book['cover_image']) && file_exists('../' . $book['cover_image'])) {
+        unlink('../' . $book['cover_image']);
+    }
+    
+    // Delete the book
+    $delete_stmt = $conn->prepare("DELETE FROM books WHERE book_id = ?");
+    $delete_stmt->bind_param("i", $book_id);
+    
+    if ($delete_stmt->execute()) {
+        // Commit transaction
+        $conn->commit();
+        redirect_with_message('manage_books.php', 'Book "' . $book['title'] . '" deleted successfully', 'success');
+    } else {
+        throw new Exception("Failed to delete book from database");
+    }
+    
+} catch (Exception $e) {
+    // Rollback transaction
+    $conn->rollback();
+    redirect_with_message('manage_books.php', 'Error deleting book: ' . $e->getMessage(), 'error');
+}
 ?>
+
+<script>
+    setTimeout(function() {
+        location.reload();
+    }, 30000); // Refresh every 30 seconds
+</script>
