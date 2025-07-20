@@ -8,48 +8,73 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
     exit;
 }
 
-// Fetch comprehensive stats
-$stats_query = "
-    SELECT 
-        (SELECT COUNT(*) FROM books) as total_books,
-        (SELECT COUNT(*) FROM orders) as total_orders,
-        (SELECT COUNT(*) FROM users WHERE user_type = 'customer') as total_customers,
-        (SELECT SUM(stock_quantity) FROM books) as total_stock,
-        (SELECT COUNT(*) FROM books WHERE stock_quantity = 0) as out_of_stock,
-        (SELECT COUNT(*) FROM books WHERE stock_quantity <= 5 AND stock_quantity > 0) as low_stock,
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders) as total_revenue,
-        (SELECT COUNT(*) FROM orders WHERE status = 'Pending') as pending_orders
-";
+try {
+    // Fetch comprehensive stats using PDO
+    $stats_query = "
+        SELECT 
+            (SELECT COUNT(*) FROM books) as total_books,
+            (SELECT COUNT(*) FROM orders) as total_orders,
+            (SELECT COUNT(*) FROM users WHERE user_type = 'customer') as total_customers,
+            (SELECT SUM(stock_quantity) FROM books) as total_stock,
+            (SELECT COUNT(*) FROM books WHERE stock_quantity = 0) as out_of_stock,
+            (SELECT COUNT(*) FROM books WHERE stock_quantity <= 5 AND stock_quantity > 0) as low_stock,
+            (SELECT COALESCE(SUM(total_amount), 0) FROM orders) as total_revenue,
+            (SELECT COUNT(*) FROM orders WHERE status = 'Pending') as pending_orders
+    ";
 
-$stats_result = $conn->query($stats_query);
-$stats = $stats_result->fetch_assoc();
+    // PDO: Execute query and fetch stats
+    $stats_stmt = $conn->query($stats_query);
+    $stats = $stats_stmt->fetch();
 
-// Get recent orders
-$recent_orders = $conn->query("
-    SELECT o.*, u.name as customer_name 
-    FROM orders o 
-    JOIN users u ON o.user_id = u.user_id 
-    ORDER BY o.order_date DESC 
-    LIMIT 5
-");
+    // Get recent orders using PDO
+    $recent_orders_query = "
+        SELECT o.*, u.name as customer_name 
+        FROM orders o 
+        JOIN users u ON o.user_id = u.user_id 
+        ORDER BY o.order_date DESC 
+        LIMIT 5
+    ";
+    $recent_orders_stmt = $conn->query($recent_orders_query);
+    $recent_orders = $recent_orders_stmt->fetchAll();
 
-// Get low stock books
-$low_stock_books = $conn->query("
-    SELECT * FROM books 
-    WHERE stock_quantity <= 5 
-    ORDER BY stock_quantity ASC 
-    LIMIT 5
-");
+    // Get low stock books using PDO
+    $low_stock_query = "
+        SELECT * FROM books 
+        WHERE stock_quantity <= 5 
+        ORDER BY stock_quantity ASC 
+        LIMIT 5
+    ";
+    $low_stock_stmt = $conn->query($low_stock_query);
+    $low_stock_books = $low_stock_stmt->fetchAll();
 
-// Get top selling books (mock data for now, you can implement proper analytics later)
-$top_books = $conn->query("
-    SELECT b.title, b.author, COUNT(od.book_id) as sales_count
-    FROM books b
-    LEFT JOIN order_details od ON b.book_id = od.book_id
-    GROUP BY b.book_id
-    ORDER BY sales_count DESC
-    LIMIT 5
-");
+    // Get top selling books using PDO (mock data for now, you can implement proper analytics later)
+    $top_books_query = "
+        SELECT b.title, b.author, COUNT(od.book_id) as sales_count
+        FROM books b
+        LEFT JOIN order_details od ON b.book_id = od.book_id
+        GROUP BY b.book_id
+        ORDER BY sales_count DESC
+        LIMIT 5
+    ";
+    $top_books_stmt = $conn->query($top_books_query);
+    $top_books = $top_books_stmt->fetchAll();
+
+} catch(PDOException $e) {
+    // Handle database errors gracefully
+    $stats = [
+        'total_books' => 0,
+        'total_orders' => 0,
+        'total_customers' => 0,
+        'total_stock' => 0,
+        'out_of_stock' => 0,
+        'low_stock' => 0,
+        'total_revenue' => 0,
+        'pending_orders' => 0
+    ];
+    $recent_orders = [];
+    $low_stock_books = [];
+    $top_books = [];
+}
 ?>
 
 <!DOCTYPE html>
