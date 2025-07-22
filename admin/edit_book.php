@@ -9,20 +9,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
     exit;
 }
 
-$book_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-if ($book_id <= 0) {
-    redirect_with_message('manage_books.php', 'Invalid book ID', 'error');
-}
-
-// Get book details
-$book = get_book_by_id($conn, $book_id);
-
-if (!$book) {
-    redirect_with_message('manage_books.php', 'Book not found', 'error');
-}
+//need to add book id 
 
 $errors = [];
+
+$success_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize input data
