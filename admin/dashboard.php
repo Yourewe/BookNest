@@ -229,8 +229,8 @@ try {
             <!-- Recent Orders -->
             <div class="dashboard-section">
                 <h3>Recent Orders</h3>
-                <?php if ($recent_orders->num_rows > 0): ?>
-                    <?php while ($order = $recent_orders->fetch_assoc()): ?>
+                <?php if (!empty($recent_orders)): ?>
+                    <?php foreach ($recent_orders as $order): ?>
                         <div class="list-item">
                             <div>
                                 <strong>#<?php echo $order['order_id']; ?></strong><br>
@@ -241,7 +241,7 @@ try {
                                 <small><?php echo date('M j, Y', strtotime($order['order_date'])); ?></small>
                             </div>
                         </div>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                     <div style="text-align: center; margin-top: 15px;">
                         <a href="orders.php" class="btn btn-primary">View All Orders</a>
                     </div>
@@ -253,8 +253,8 @@ try {
             <!-- Low Stock Alert -->
             <div class="dashboard-section">
                 <h3>Low Stock Alert</h3>
-                <?php if ($low_stock_books->num_rows > 0): ?>
-                    <?php while ($book = $low_stock_books->fetch_assoc()): ?>
+                <?php if (!empty($low_stock_books)): ?>
+                    <?php foreach ($low_stock_books as $book): ?>
                         <div class="list-item">
                             <div>
                                 <strong><?php echo htmlspecialchars($book['title']); ?></strong><br>
@@ -267,7 +267,7 @@ try {
                                 <a href="edit_book.php?id=<?php echo $book['book_id']; ?>" style="font-size: 12px;">Update</a>
                             </div>
                         </div>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                     <div style="text-align: center; margin-top: 15px;">
                         <a href="manage_books.php" class="btn btn-warning">Manage Stock</a>
                     </div>
@@ -279,8 +279,8 @@ try {
             <!-- Top Selling Books -->
             <div class="dashboard-section">
                 <h3>Popular Books</h3>
-                <?php if ($top_books->num_rows > 0): ?>
-                    <?php while ($book = $top_books->fetch_assoc()): ?>
+                <?php if (!empty($top_books)): ?>
+                    <?php foreach ($top_books as $book): ?>
                         <div class="list-item">
                             <div>
                                 <strong><?php echo htmlspecialchars($book['title']); ?></strong><br>
@@ -292,7 +292,7 @@ try {
                                 </span>
                             </div>
                         </div>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 <?php else: ?>
                     <p style="color: #666; text-align: center; padding: 20px;">No sales data yet</p>
                 <?php endif; ?>
