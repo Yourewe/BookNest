@@ -1,4 +1,4 @@
-<?php
+<!-- <?php
 session_start();
 require '../includes/db.php';
 require '../includes/functions.php';
@@ -75,9 +75,9 @@ try {
     $low_stock_books = [];
     $top_books = [];
 }
-?>
+?> -->
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -146,7 +146,7 @@ try {
             }
         }
     </style>
-</head>
+</head> -->
 <body>
     <!-- Admin Header -->
     <header class="admin-header">
