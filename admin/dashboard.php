@@ -322,7 +322,6 @@ try {
     </div>
 
     <script>
-        // Auto-refresh stats every 30 seconds
         setTimeout(function() {
             location.reload();
         }, 30000);
