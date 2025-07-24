@@ -48,14 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $errors = array_merge($errors, $validation_errors);
     
     // Handle image upload
-    $cover_image = $book['cover_image']; // Keep existing image by default
+    $cover_image = null;
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] !== UPLOAD_ERR_NO_FILE) {
         $upload_result = upload_book_cover($_FILES['cover_image']);
         if ($upload_result['success']) {
-            // Delete old image if it exists
-            if (!empty($book['cover_image']) && file_exists('../' . $book['cover_image'])) {
-                unlink('../' . $book['cover_image']);
-            }
             $cover_image = $upload_result['filename'];
         } else {
             $errors[] = $upload_result['message'];
