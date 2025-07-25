@@ -58,18 +58,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     
-    // If no errors, update the book
+       // If no errors, insert the book
     if (empty($errors)) {
         try {
-            $stmt = $conn->prepare("UPDATE books SET title=?, author=?, genre=?, price=?, description=?, stock_quantity=?, cover_image=? WHERE book_id=?");
-            $stmt->bind_param("sssdsiss", $title, $author, $genre, $price, $description, $stock, $cover_image, $book_id);
+            // PDO prepared statement - no bind_param needed
+            $stmt = $conn->prepare("INSERT INTO books (title, author, genre, price, description, stock_quantity, cover_image) VALUES (?, ?, ?, ?, ?, ?, ?)");
             
-            if ($stmt->execute()) {
-                redirect_with_message('manage_books.php', 'Book updated successfully!', 'success');
+            // PDO execute with array of parameters
+            if ($stmt->execute([$title, $author, $genre, $price, $description, $stock, $cover_image])) {
+                redirect_with_message('manage_books.php', 'Book added successfully!', 'success');
             } else {
-                $errors[] = "Failed to update book. Please try again.";
+                $errors[] = "Failed to add book. Please try again.";
             }
-        } catch (Exception $e) {
+        } catch (PDOException $e) {
             $errors[] = "Database error: " . $e->getMessage();
         }
     }
@@ -81,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Book - BookNest Admin</title>
+    <title>Add Book - BookNest Admin</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
