@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute();
         $res = $stmt->get_result();
         
-        if ($res->num_rows == 1) {
+         if ($res->num_rows == 1) {
             $user = $res->fetch_assoc();
             if (password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['user_id'];
