@@ -22,23 +22,19 @@ if (!$book) {
 }
 
 try {
-    // Start transaction
-    $conn->begin_transaction();
+    // Start transaction (PDO method)
+    $conn->beginTransaction();
     
-    // Check if book has any orders (you might want to prevent deletion if there are orders)
+    // Check if book has any orders (PDO version)
     $order_check = $conn->prepare("SELECT COUNT(*) as order_count FROM order_details WHERE book_id = ?");
-    $order_check->bind_param("i", $book_id);
-    $order_check->execute();
-    $order_count = $order_check->get_result()->fetch_assoc()['order_count'];
+    $order_check->execute([$book_id]);
+    $order_result = $order_check->fetch();
+    $order_count = $order_result['order_count'];
     
     if ($order_count > 0) {
-        // Instead of deleting, you might want to mark as inactive or show warning
+        // Rollback and redirect with warning
+        $conn->rollback();
         redirect_with_message('manage_books.php', 'Cannot delete book with existing orders. Consider updating stock to 0 instead.', 'warning');
-    }
-    
-    // Delete book cover image if it exists
-    if (!empty($book['cover_image']) && file_exists('../' . $book['cover_image'])) {
-        unlink('../' . $book['cover_image']);
     }
     
     // Delete the book
